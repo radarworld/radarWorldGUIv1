@@ -12,16 +12,6 @@ import matplotlib.pyplot
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 
-
-        
-#FigureRightSide = matplotlib.pyplot.figure() # create a figure object)
-#ax1 = FigureRightSide.add_subplot(2, 1, 1)
-#ax2 = FigureRightSide.add_subplot(2, 1, 2)
-
-
-
-
-
 #create MyWindow class inheriting from tk.Frame
 class MainWindow(Frame):
     
@@ -80,12 +70,12 @@ class MainWindow(Frame):
         spaceHolder = Label(leftSideControlsFrame, text="Avaiable Interfaces:",
                             background=leftSideControlsFrame['background'], bd=1, relief=FLAT, anchor=W)
         spaceHolder.grid(row=0, column=0, padx=10, pady=0, sticky=W+N+E)
-        #LEFT SIDE FRAME ELEMENT 2: combobox for seria port list 
-        serialPortCmbBox = Combobox(leftSideControlsFrame, values=serialSystemClass.getSerialPorts(),
+        #LEFT SIDE FRAME ELEMENT 2: combobox for serial port list 
+        self.serialPortCmbBox = Combobox(leftSideControlsFrame, values=serialSystemClass.getSerialPorts(),
                                          background=leftSideControlsFrame['background'])
-        serialPortCmbBox.current(0)
-        serialPortCmbBox.grid(row=1, column=0, padx=0, pady=0, columnspan=2, sticky = W+E+N+S)
-        serialPortCmbBox.bind('<<ComboboxSelected>>', self.on_serialPortCmbBox_select)
+        self.serialPortCmbBox.current(0)
+        self.serialPortCmbBox.grid(row=1, column=0, padx=0, pady=0, columnspan=2, sticky = W+E+N+S)
+        self.serialPortCmbBox.bind('<<ComboboxSelected>>', self.on_serialPortCmbBox_select)
     
         #define RIGHT SIDE FRAME inside row=0 col=1 for the figures
                              #+--------++----------------+
@@ -114,11 +104,12 @@ class MainWindow(Frame):
         rightSideControlsFrame.columnconfigure(0, weight=1) # an empty column must be defined for the widgets
         #RIGHT SIDE FRAME ELEMENTS:
         #RIGHT SIDE FRAME ELEMENT 1: widget at row=0, col=1, canvas for graph:
-        #FigureRightSide = matplotlib.pyplot.figure() # create a figure object)
-        #self.ax1 = FigureRightSide.add_subplot(2, 1, 1)
-        #self.ax2 = FigureRightSide.add_subplot(2, 1, 2)
-        #canvasForGraph = FigureCanvasTkAgg(FigureRightSide, master=rightSideControlsFrame) #create canvas for figure int the frame
-        #canvasForGraph.get_tk_widget().grid(sticky=S+W+N+E)
+        FigureRightSide = Figure() # create a figure object
+        self.ax1 = FigureRightSide.add_subplot(2, 1, 1)
+        self.ax2 = FigureRightSide.add_subplot(2, 1, 2)
+        #link figure to canvas and display
+        canvasForGraph = FigureCanvasTkAgg(FigureRightSide, master=rightSideControlsFrame) #create canvas for figure int the frame
+        canvasForGraph.get_tk_widget().grid(sticky=S+W+N+E)
 
 
         
@@ -215,7 +206,7 @@ class MainWindow(Frame):
         
 
               
-        #* * * * * * define the Ui elements * * * * * *
+        #* * * * * * Menu * * * * * *
         # Menubar:
         menubar = Menu(topWindow)
         topWindow.config(menu=menubar)
@@ -233,6 +224,9 @@ class MainWindow(Frame):
         helpMenu = Menu(menubar, tearoff=0)
         menubar.add_cascade(label="Help", menu=helpMenu)
         helpMenu.add_command(label="About", command=MainWindow.helpMenu_About)
+
+        #* * * * * * Graph * * * * * *
+        # Menubar:
         
 
     #* * * * * * functions to serve the Ui * * * * * *
@@ -299,18 +293,22 @@ class MainWindow(Frame):
         #call the own function after 1 sec
         self.after(1050,self.updateStatusBar)
 
-    def updateGraph(self):
-        pass
-        #xValuesRawData = np.linspace(0, 10, 11)
+    def updateGraph(self,nbytes, yValues):
+        xValuesRawData = np.linspace(0, nbytes, nbytes +1)
+        #yValues = np.random.rand(11)
+        #yValues=np.linspace(0, 10, 11)
+        print(xValuesRawData)
+        print(yValues)
+        self.ax1.plot(xValuesRawData, yValues, lw=2, color='red', label='rawI1')
         #self.ax1.clear()
         #self.ax2.clear()
         #xValuesRawData  = np.linspace(0, rawI1.size-1, rawI1.size)
         #ax1.plot(xValuesRawData, rawI1[0,:], lw=2, color='red', label='rawI1')
         #ax1.plot(xValuesRawData, rawQ1[0,:], lw=2, color='blue', label='rawQ1')
-        #ax1.set_title("raw data")
-        #ax1.set_xlabel('time')
-        #ax1.set_ylabel('amplitude')
-        #ax1.legend()
+        self.ax1.set_title("raw data")
+        self.ax1.set_xlabel('time')
+        self.ax1.set_ylabel('amplitude')
+        self.ax1.legend()
 
         #plot fft magnitude
         #xValuesMagData  = np.linspace(0, FFTmag.size-1, FFTmag.size)
@@ -335,15 +333,21 @@ if __name__=="__main__":
 
     #Geometry manager Pack. Pack a widget in the parent widget with the grid() builder.
     MainWindow(root).grid()
-
-
-#MainWindow(root).updateStatusBar()
-#MainWindow(root).updateClock()
-
-#MainWindow(root).after(0, MainWindow(root).updateClock())
-#MainWindow(root).after(0, MainWindow(root).updateStatusBar())
-
+    ser = serialUtilsClass(MainWindow(root).serialPortCmbBox.get())
+    serialMsgStatus, nbytes, rawI1 = ser.parseUartFrame()
     
+    if ser:
+        pass
+       # MainWindow(root).updateGraph(nbytes,rawI1)
+        
+        
+
+   # print(serialUtilsClass.testWithRandomData())
+   # x, y = serialUtilsClass.supplyRandomData()
+   # print(serialUtilsClass.supplyRandomData())
+   # MainWindow(root).updateGraph(x,y)
+
+  
 
 #tk.mainloop() blocks. What that means is that execution of your python program halts there
     root.mainloop()
