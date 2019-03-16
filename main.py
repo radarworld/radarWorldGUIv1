@@ -108,8 +108,8 @@ class MainWindow(Frame):
         self.ax1 = FigureRightSide.add_subplot(2, 1, 1)
         self.ax2 = FigureRightSide.add_subplot(2, 1, 2)
         #link figure to canvas and display
-        canvasForGraph = FigureCanvasTkAgg(FigureRightSide, master=rightSideControlsFrame) #create canvas for figure int the frame
-        canvasForGraph.get_tk_widget().grid(sticky=S+W+N+E)
+        self.canvasForGraph = FigureCanvasTkAgg(FigureRightSide, master=rightSideControlsFrame) #create canvas for figure int the frame
+        self.canvasForGraph.get_tk_widget().grid(sticky=S+W+N+E)
 
 
         
@@ -293,22 +293,32 @@ class MainWindow(Frame):
         #call the own function after 1 sec
         self.after(1050,self.updateStatusBar)
 
-    def updateGraph(self,nbytes, yValues):
-        xValuesRawData = np.linspace(0, nbytes, nbytes +1)
-        #yValues = np.random.rand(11)
-        #yValues=np.linspace(0, 10, 11)
-        print(xValuesRawData)
-        print(yValues)
-        self.ax1.plot(xValuesRawData, yValues, lw=2, color='red', label='rawI1')
-        #self.ax1.clear()
+    def updateGraph(self, nrawI1, yValues):
+        xValuesRawData = np.linspace(0, nrawI1-1, nrawI1)
+
+        print("updateGraph():")
+        print("nrawI1:", nrawI1)
+        print("xValuesRawData:", xValuesRawData)
+        print("xValuesRawData Dimensions:", xValuesRawData.ndim)
+        
+        print("yValues:",yValues)
+        print("yValues Dimensions:", yValues.ndim)
+        print("yValues length:", np.prod(yValues.shape))
+
+    
+        self.ax1.plot(xValuesRawData, yValues[0,:], lw=2, color='red', label='rawI1')
+        #self.canvasForGraph.draw()
+        #self.canvasForGraph.flush_events()
+        self.ax1.clear()
         #self.ax2.clear()
         #xValuesRawData  = np.linspace(0, rawI1.size-1, rawI1.size)
         #ax1.plot(xValuesRawData, rawI1[0,:], lw=2, color='red', label='rawI1')
         #ax1.plot(xValuesRawData, rawQ1[0,:], lw=2, color='blue', label='rawQ1')
-        self.ax1.set_title("raw data")
-        self.ax1.set_xlabel('time')
-        self.ax1.set_ylabel('amplitude')
-        self.ax1.legend()
+
+        #self.ax1.set_title("raw data")
+        #self.ax1.set_xlabel('time')
+        #self.ax1.set_ylabel('amplitude')
+        #self.ax1.legend()
 
         #plot fft magnitude
         #xValuesMagData  = np.linspace(0, FFTmag.size-1, FFTmag.size)
@@ -334,18 +344,15 @@ if __name__=="__main__":
     #Geometry manager Pack. Pack a widget in the parent widget with the grid() builder.
     MainWindow(root).grid()
     ser = serialUtilsClass(MainWindow(root).serialPortCmbBox.get())
-    serialMsgStatus, nbytes, rawI1 = ser.parseUartFrame()
-    
+
+    serialMsgStatus, nrawI1, rawI1 = ser.parseUartFrame()
     if ser:
-        pass
-       # MainWindow(root).updateGraph(nbytes,rawI1)
+        MainWindow(root).updateGraph(nrawI1,rawI1)
+
+        
         
         
 
-   # print(serialUtilsClass.testWithRandomData())
-   # x, y = serialUtilsClass.supplyRandomData()
-   # print(serialUtilsClass.supplyRandomData())
-   # MainWindow(root).updateGraph(x,y)
 
   
 

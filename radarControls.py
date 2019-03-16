@@ -150,11 +150,11 @@ class serialUtilsClass(object):
         for i in range(5, 260, 2):
             tmp = uartFrame[0, i] * 256
             tmp = tmp + uartFrame[0, i+1]
-            rawI1[0,cnt] = tmp
+            rawI1[0, cnt] = tmp
             #print("cnt:", cnt, "rawI1:",  rawI1[0,cnt])
             cnt = cnt + 1
         #print("RawI[]:", end='\n')
-            print("rawI1 type:", type(rawI1))
+        print("rawI1 type:", type(rawI1))
         #serialUtilsClass.dumpArray(rawI1)
 
         #rawQ1:
@@ -192,7 +192,7 @@ class serialUtilsClass(object):
         #ED, end delimiter (22=0x16):
         ED = np.uint8(uartFrame[0,1030])
         print("ED:", ED)
-        return 1, uartFrame.nbytes, rawI1
+        return 1, np.prod(rawI1.shape), rawI1
 
     def testWithRandomData():
         return 1
