@@ -4,13 +4,80 @@ from tkinter.ttk import Separator, Style, Combobox
 from tkinter.scrolledtext import ScrolledText
 import sys
 import datetime
+import random
 
 from radarControls import *
 
 import matplotlib.pyplot
+import numpy as np
 
+import matplotlib.animation as animation
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
+FigureRightSide = Figure(figsize=(8, 7)) # create a figure object figsize=(8, 7)
+
+ax1 = FigureRightSide.add_subplot(2, 1, 1)
+ax2 = FigureRightSide.add_subplot(2, 1, 2)
+
+
+nRawI1 = 128
+xValuesRawData = np.linspace(0, nRawI1-1, nRawI1, dtype=np.int16)
+rawI2= np.ones((nRawI1,), dtype=np.int16)
+
+ln, = ax1.plot(xValuesRawData, rawI2, lw=2, color='red', label='rawI1')
+
+def initGraph():
+    ax1.clear()
+    #FigureRightSide.subplots_adjust(left=0.1, bottom=0, right=0.9, top=0.01, wspace=0.9, hspace=0.3)
+    #FigureRightSide.tight_layout()
+    ax1.set_title("RawI1")
+    ax1.set_xlabel('time')
+    ax1.set_ylabel('amplitude')
+    ax1.set_ylim(0,120)
+    ax1.set_xlim(0,nRawI1)
+
+    return ln, #when using blit=True, the updating and init funtion supposed to
+               #returmn an iterable of artsts to animate.
+
+
+def refreshGraph(i):
+    global rawI2
+    ln.set_data(xValuesRawData, rawI2)
+    return ln, #when using blit=True, the updating and init funtion supposed to
+               #returmn an iterable of artsts to animate.
+def genSimulateData():
+
+    global rawI2
+
+    rawI2=(np.random.randint(100, size=nRawI1))
+    root.after(1,genSimulateData)
+
+    
+    #self.ax1.plot(xValuesRawData, yValues[0,:], lw=2, color='red', label='rawI1')
+    #self.canvasForGraph.draw()
+    #self.canvasForGraph.flush_events()
+    #self.ax1.clear()
+    #self.ax2.clear()
+    #xValuesRawData  = np.linspace(0, rawI1.size-1, rawI1.size)
+    #ax1.plot(xValuesRawData, rawI1[0,:], lw=2, color='red', label='rawI1')
+    #ax1.plot(xValuesRawData, rawQ1[0,:], lw=2, color='blue', label='rawQ1')
+
+    #self.ax1.set_title("raw data")
+    #self.ax1.set_xlabel('time')
+    #self.ax1.set_ylabel('amplitude')
+    #self.ax1.legend()
+
+    #plot fft magnitude
+    #xValuesMagData  = np.linspace(0, FFTmag.size-1, FFTmag.size)
+    #ax2.plot(xValuesMagData, FFTmag[0,:], lw=2, color='green', label='fft mag')
+    #ax2.set_title('fft mag')
+    #ax2.set_xlabel('freq')
+    #ax2.set_label('amplitude')
+    #ax2.legend()
+    
+
+
 
 #create MyWindow class inheriting from tk.Frame
 class MainWindow(Frame):
@@ -104,12 +171,15 @@ class MainWindow(Frame):
         rightSideControlsFrame.columnconfigure(0, weight=1) # an empty column must be defined for the widgets
         #RIGHT SIDE FRAME ELEMENTS:
         #RIGHT SIDE FRAME ELEMENT 1: widget at row=0, col=1, canvas for graph:
-        FigureRightSide = Figure() # create a figure object
-        self.ax1 = FigureRightSide.add_subplot(2, 1, 1)
-        self.ax2 = FigureRightSide.add_subplot(2, 1, 2)
         #link figure to canvas and display
         self.canvasForGraph = FigureCanvasTkAgg(FigureRightSide, master=rightSideControlsFrame) #create canvas for figure int the frame
+        self.canvasForGraph.draw()
         self.canvasForGraph.get_tk_widget().grid(sticky=S+W+N+E)
+        ax1.plot(xValuesRawData, rawI2)
+
+        
+        
+
 
 
         
@@ -293,40 +363,6 @@ class MainWindow(Frame):
         #call the own function after 1 sec
         self.after(1050,self.updateStatusBar)
 
-    def updateGraph(self, nrawI1, yValues):
-        xValuesRawData = np.linspace(0, nrawI1-1, nrawI1)
-
-        print("updateGraph():")
-        print("nrawI1:", nrawI1)
-        print("xValuesRawData:", xValuesRawData)
-        print("xValuesRawData Dimensions:", xValuesRawData.ndim)
-        
-        print("yValues:",yValues)
-        print("yValues Dimensions:", yValues.ndim)
-        print("yValues length:", np.prod(yValues.shape))
-
-    
-        self.ax1.plot(xValuesRawData, yValues[0,:], lw=2, color='red', label='rawI1')
-        #self.canvasForGraph.draw()
-        #self.canvasForGraph.flush_events()
-        self.ax1.clear()
-        #self.ax2.clear()
-        #xValuesRawData  = np.linspace(0, rawI1.size-1, rawI1.size)
-        #ax1.plot(xValuesRawData, rawI1[0,:], lw=2, color='red', label='rawI1')
-        #ax1.plot(xValuesRawData, rawQ1[0,:], lw=2, color='blue', label='rawQ1')
-
-        #self.ax1.set_title("raw data")
-        #self.ax1.set_xlabel('time')
-        #self.ax1.set_ylabel('amplitude')
-        #self.ax1.legend()
-
-        #plot fft magnitude
-        #xValuesMagData  = np.linspace(0, FFTmag.size-1, FFTmag.size)
-        #ax2.plot(xValuesMagData, FFTmag[0,:], lw=2, color='green', label='fft mag')
-        #ax2.set_title('fft mag')
-        #ax2.set_xlabel('freq')
-        #ax2.set_label('amplitude')
-        #ax2.legend()
 
         
         
@@ -343,11 +379,13 @@ if __name__=="__main__":
 
     #Geometry manager Pack. Pack a widget in the parent widget with the grid() builder.
     MainWindow(root).grid()
-    ser = serialUtilsClass(MainWindow(root).serialPortCmbBox.get())
+    #ser = serialUtilsClass(MainWindow(root).serialPortCmbBox.get())
 
-    serialMsgStatus, nrawI1, rawI1 = ser.parseUartFrame()
-    if ser:
-        MainWindow(root).updateGraph(nrawI1,rawI1)
+    #serialMsgStatus, nrawI1, rawI1 = ser.parseUartFrame()
+    genSimulateData()
+
+    
+    ani = animation.FuncAnimation(FigureRightSide, refreshGraph, init_func=initGraph, blit=True, interval=2)
 
         
         
