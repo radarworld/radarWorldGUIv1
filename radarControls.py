@@ -10,7 +10,6 @@ import array
 import struct
 import codecs
 import numpy as np
-from colorama import Fore, Style #Colorama: Cross-platform colored terminal text.
 import config # access to the global varaibles for display
 import processingFucntionsForRadar
 from main import MainWindow

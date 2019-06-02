@@ -14,9 +14,10 @@ import numpy as np
 import matplotlib.animation as animation
 from matplotlib.figure import Figure
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+#Global variables:
 
-FigureRightSide = Figure(figsize=(8, 7)) # create a figure object figsize=(8, 7)
-
+#Figure object to hold the graphs
+FigureRightSide = Figure(figsize=(5, 5)) # create a figure object figsize=(8, 7)
 ax1 = FigureRightSide.add_subplot(2, 1, 1)
 ax2 = FigureRightSide.add_subplot(2, 1, 2)
 
@@ -295,9 +296,7 @@ class MainWindow(Frame):
         menubar.add_cascade(label="Help", menu=helpMenu)
         helpMenu.add_command(label="About", command=MainWindow.helpMenu_About)
 
-        #* * * * * * Graph * * * * * *
-        # Menubar:
-        
+
 
     #* * * * * * functions to serve the Ui * * * * * *
     def helpMenu_About():
